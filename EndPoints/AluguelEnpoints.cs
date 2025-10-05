@@ -2,7 +2,6 @@
 using locadora.Data;
 using locadora.Models;
 using Microsoft.AspNetCore.Mvc;
-using locadora.DTOs;
 
 namespace locadora.EndPoints
 {
