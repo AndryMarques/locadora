@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace locadora.Models
 {
@@ -18,6 +19,7 @@ namespace locadora.Models
 
         public int IdFabricante { get; set; }
 
+        [JsonIgnore]
         [ForeignKey("IdFabricante")]
         public Fabricante Fabricante { get; set; }
 

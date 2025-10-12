@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using locadora.Data;
-using locadora.EndPoints; // Corrigido o namespace
-using locadora.Models;
-using Microsoft.OpenApi.Models;
+using locadora.EndPoints;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,11 +11,16 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<LocadoraDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Adiciona os serviços do Swagger para documentação e teste da API
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "API Locadora", Version = "v1" });
+});
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
 });
 
 
