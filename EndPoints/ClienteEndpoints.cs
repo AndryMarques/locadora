@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using locadora.Data;
+﻿using locadora.Data;
+using locadora.DTOs;
 using locadora.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace locadora.EndPoints
 {
@@ -23,21 +24,30 @@ namespace locadora.EndPoints
             });
 
             // POST /api/clientes
-            group.MapPost("/", async ([FromBody] Cliente cliente, LocadoraDbContext db) =>
+            group.MapPost("/", async ([FromBody] CreateCliente clienteDTO, LocadoraDbContext db) =>
             {
-                if (string.IsNullOrEmpty(cliente.Nome) || string.IsNullOrEmpty(cliente.CPF) || string.IsNullOrEmpty(cliente.Email))
+
+                var novoCliente = new Cliente
+                {
+                    Nome = clienteDTO.Nome,
+                    CPF = clienteDTO.CPF,
+                    Email = clienteDTO.Email,
+                    Telefone = clienteDTO.Telefone
+                };
+
+                if (string.IsNullOrEmpty(novoCliente.Nome) || string.IsNullOrEmpty(novoCliente.CPF) || string.IsNullOrEmpty(novoCliente.Email))
                 {
                     return Results.BadRequest("Nome, CPF e Email são obrigatórios.");
                 }
 
-                db.Clientes.Add(cliente);
+                db.Clientes.Add(novoCliente);
                 await db.SaveChangesAsync();
 
-                return Results.Created($"/api/clientes/{cliente.IdCliente}", cliente);
+                return Results.Created($"/api/clientes/{novoCliente.IdCliente}", novoCliente);
             });
 
             // PUT /api/clientes/{idCliente}
-            group.MapPut("/{idCliente:int}", async (int idCliente, [FromBody] Cliente clienteAtualizado, LocadoraDbContext db) =>
+            group.MapPut("/{idCliente:int}", async (int idCliente, [FromBody] UpdateCliente clienteAtualizado, LocadoraDbContext db) =>
             {
                 var clienteExistente = await db.Clientes.FindAsync(idCliente);
                 if (clienteExistente is null)
@@ -46,7 +56,6 @@ namespace locadora.EndPoints
                 }
 
                 clienteExistente.Nome = clienteAtualizado.Nome;
-                clienteExistente.CPF = clienteAtualizado.CPF;
                 clienteExistente.Email = clienteAtualizado.Email;
                 clienteExistente.Telefone = clienteAtualizado.Telefone;
 

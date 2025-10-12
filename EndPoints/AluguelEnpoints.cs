@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using locadora.Data;
 using locadora.Models;
-using Microsoft.AspNetCore.Mvc;
+using locadora.DTOs;
 
 namespace locadora.EndPoints
 {
@@ -38,22 +39,32 @@ namespace locadora.EndPoints
             });
 
             // POST /api/alugueis
-            group.MapPost("/", async ([FromBody] Aluguel aluguel, LocadoraDbContext db) =>
+            group.MapPost("/", async ([FromBody] CreateAluguel aluguelDTO, LocadoraDbContext db) =>
             {
-                // Validação básica
-                if (aluguel.IdCliente <= 0 || aluguel.IdVeiculo <= 0 || aluguel.IdFuncionario <= 0)
+                var novoAluguel = new Aluguel
                 {
-                    return Results.BadRequest("IDs de Cliente, Veículo e Funcionário são obrigatórios.");
+                    DataIni = aluguelDTO.DataIni,
+                    DataFimPrev = aluguelDTO.DataFimPrev,
+                    KmIni = aluguelDTO.KmIni,
+                    ValorDia = aluguelDTO.ValorDia,
+                    IdCliente = aluguelDTO.IdCliente,
+                    IdVeiculo = aluguelDTO.IdVeiculo,
+                    IdFuncionario = aluguelDTO.IdFuncionario
+                };
+
+                if (novoAluguel.DataFimPrev <= novoAluguel.DataIni)
+                {
+                    return Results.BadRequest("A data prevista de fim deve ser posterior à data de início.");
                 }
 
-                db.Alugueis.Add(aluguel);
+                db.Alugueis.Add(novoAluguel);
                 await db.SaveChangesAsync();
 
-                return Results.Created($"/api/alugueis/{aluguel.IdAluguel}", aluguel);
+                return Results.Created($"/api/alugueis/{novoAluguel.IdAluguel}", novoAluguel);
             });
 
             // PUT /api/alugueis/{idAluguel}
-            group.MapPut("/{idAluguel:int}", async (int idAluguel, [FromBody] Aluguel aluguelAtualizado, LocadoraDbContext db) =>
+            group.MapPut("/{idAluguel:int}", async (int idAluguel, [FromBody] UpdateAluguel aluguelAtualizado, LocadoraDbContext db) =>
             {
                 var aluguelExistente = await db.Alugueis.FindAsync(idAluguel);
                 if (aluguelExistente is null)
@@ -62,7 +73,6 @@ namespace locadora.EndPoints
                 }
 
                 // Atualiza as propriedades que podem ser modificadas
-                aluguelExistente.DataFimPrev = aluguelAtualizado.DataFimPrev;
                 aluguelExistente.DataFimReal = aluguelAtualizado.DataFimReal;
                 aluguelExistente.KmFim = aluguelAtualizado.KmFim;
                 aluguelExistente.ValorFim = aluguelAtualizado.ValorFim;

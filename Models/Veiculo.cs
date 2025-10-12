@@ -16,10 +16,8 @@ namespace locadora.Models
 
         public double KM { get; set; }
 
-        // Chave estrangeira
         public int IdFabricante { get; set; }
 
-        // Propriedade de navegação
         [ForeignKey("IdFabricante")]
         public Fabricante Fabricante { get; set; }
 

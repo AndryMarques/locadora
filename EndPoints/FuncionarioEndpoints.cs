@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using locadora.Data;
+﻿using locadora.Data;
+using locadora.DTOs;
 using locadora.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace locadora.EndPoints
 {
@@ -22,22 +23,29 @@ namespace locadora.EndPoints
                 return funcionario is not null ? Results.Ok(funcionario) : Results.NotFound("Funcionário não encontrado.");
             });
 
-            // POST /api/funcionarios
-            group.MapPost("/", async ([FromBody] Funcionario funcionario, LocadoraDbContext db) =>
+            // POST /api/funcionario
+            group.MapPost("/", async ([FromBody] CreateFuncionario funcionarioDTO, LocadoraDbContext db) =>
             {
-                if (string.IsNullOrEmpty(funcionario.Nome))
+
+                var novoFuncionario = new Funcionario
+                {
+                    Nome = funcionarioDTO.Nome,
+                    Cargo = funcionarioDTO.Cargo
+                };
+
+                if (string.IsNullOrEmpty(funcionarioDTO.Nome))
                 {
                     return Results.BadRequest("O nome do funcionário é obrigatório.");
                 }
 
-                db.Funcionarios.Add(funcionario);
+                db.Funcionarios.Add(novoFuncionario);
                 await db.SaveChangesAsync();
 
-                return Results.Created($"/api/funcionarios/{funcionario.IdFuncionario}", funcionario);
+                return Results.Created($"/api/funcionarios/{novoFuncionario.IdFuncionario}", novoFuncionario);
             });
 
             // PUT /api/funcionarios/{idFuncionario}
-            group.MapPut("/{idFuncionario:int}", async (int idFuncionario, [FromBody] Funcionario funcionarioAtualizado, LocadoraDbContext db) =>
+            group.MapPut("/{idFuncionario:int}", async (int idFuncionario, [FromBody] CreateFuncionario funcionarioAtualizado, LocadoraDbContext db) =>
             {
                 var funcionarioExistente = await db.Funcionarios.FindAsync(idFuncionario);
                 if (funcionarioExistente is null)

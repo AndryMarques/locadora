@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using locadora.Data;
+﻿using locadora.Data;
+using locadora.DTOs;
 using locadora.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace locadora.EndPoints
 {
@@ -23,22 +24,31 @@ namespace locadora.EndPoints
             });
 
             // POST /api/veiculos
-            group.MapPost("/", async ([FromBody] Veiculo veiculo, LocadoraDbContext db) =>
+            group.MapPost("/", async ([FromBody] CreateVeiculo veiculoDTO, LocadoraDbContext db) =>
             {
+
+                var novoViculo = new Veiculo 
+                {
+                    Modelo = veiculoDTO.Modelo,
+                    Ano = veiculoDTO.Ano,
+                    KM = veiculoDTO.KM,
+                    IdFabricante = veiculoDTO.IdFabricante
+                };
+
                 // Validação simples (pode ser expandida com bibliotecas como FluentValidation)
-                if (string.IsNullOrEmpty(veiculo.Modelo) || veiculo.Ano <= 0)
+                if (string.IsNullOrEmpty(veiculoDTO.Modelo) || veiculoDTO.Ano <= 0)
                 {
                     return Results.BadRequest("Modelo e Ano são obrigatórios e o ano deve ser um valor positivo.");
                 }
 
-                db.Veiculos.Add(veiculo);
+                db.Veiculos.Add(novoViculo);
                 await db.SaveChangesAsync();
 
-                return Results.Created($"/api/veiculos/{veiculo.IdVeiculo}", veiculo);
+                return Results.Created($"/api/veiculos/{novoViculo.IdVeiculo}", novoViculo);
             });
 
             // PUT /api/veiculos/{id}
-            group.MapPut("/{idVeiculo:int}", async (int idVeiculo, [FromBody] Veiculo veiculoAtualizado, LocadoraDbContext db) =>
+            group.MapPut("/{idVeiculo:int}", async (int idVeiculo, [FromBody] UpdateVeiculo veiculoAtualizado, LocadoraDbContext db) =>
             {
                 var veiculoExistente = await db.Veiculos.FindAsync(idVeiculo);
                 if (veiculoExistente is null)

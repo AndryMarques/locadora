@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using locadora.Data;
+﻿using locadora.Data;
+using locadora.DTOs;
 using locadora.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace locadora.EndPoints
 {
@@ -23,21 +24,26 @@ namespace locadora.EndPoints
             });
 
             // POST /api/fabricantes
-            group.MapPost("/", async ([FromBody] Fabricante fabricante, LocadoraDbContext db) =>
+            group.MapPost("/", async ([FromBody] CreateFabricante fabricanteDTO, LocadoraDbContext db) =>
             {
-                if (string.IsNullOrEmpty(fabricante.Nome))
+                var novoFabricante = new Fabricante
+                {
+                    Nome = fabricanteDTO.Nome
+                };
+
+                if (string.IsNullOrEmpty(fabricanteDTO.Nome))
                 {
                     return Results.BadRequest("O nome do fabricante é obrigatório.");
                 }
 
-                db.Fabricantes.Add(fabricante);
+                db.Fabricantes.Add(novoFabricante);
                 await db.SaveChangesAsync();
 
-                return Results.Created($"/api/fabricantes/{fabricante.IdFabricante}", fabricante);
+                return Results.Created($"/api/fabricantes/{novoFabricante.IdFabricante}", novoFabricante);
             });
 
             // PUT /api/fabricantes/{idFabricante}
-            group.MapPut("/{idFabricante:int}", async (int idFabricante, [FromBody] Fabricante fabricanteAtualizado, LocadoraDbContext db) =>
+            group.MapPut("/{idFabricante:int}", async (int idFabricante, [FromBody] CreateFabricante fabricanteAtualizado, LocadoraDbContext db) =>
             {
                 var fabricanteExistente = await db.Fabricantes.FindAsync(idFabricante);
                 if (fabricanteExistente is null)

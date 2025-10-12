@@ -1,6 +1,9 @@
 ﻿using locadora.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace locadora.Models
 {
@@ -8,7 +11,7 @@ namespace locadora.Models
     {
         [Key]
         public int IdAluguel { get; set; }
-
+        
         public DateTime DataIni { get; set; }
 
         public DateTime DataFimPrev { get; set; }
